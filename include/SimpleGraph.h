@@ -15,8 +15,9 @@
 
 class SimpleGraph : public Graph {
 public:
-    std::vector<std::vector<std::pair<uint32_t,uint32_t>>> adj;
-    std::vector<std::vector<std::pair<uint32_t,uint32_t>>> reverse_adj; // vertex adjacency list
+    std::vector<std::unordered_map<uint32_t,std::vector<uint32_t>>> adj;
+    std::vector<std::unordered_map<uint32_t,std::vector<uint32_t>>> reverse_adj;
+
 protected:
     uint32_t V;
     uint32_t L;

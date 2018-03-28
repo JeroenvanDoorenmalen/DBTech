@@ -9,10 +9,10 @@
 #include <random>
 
 SimpleEstimator::SimpleEstimator(std::shared_ptr<SimpleGraph> &g) :
-    vertexIndexByLabel(),
-    vertexIndexByLabelReverse(),
-    outVertexByLabel(),
-    inVertexByLabel() {
+        vertexIndexByLabel(),
+        vertexIndexByLabelReverse(),
+        outVertexByLabel(),
+        inVertexByLabel() {
 
     // works only with SimpleGraph
     graph = g;
@@ -25,24 +25,30 @@ void SimpleEstimator::prepare() {
     for (uint32_t vertex = 0; vertex < graph->getNoVertices(); ++vertex) {
         for (auto edge : graph->adj[vertex]) {
             auto label = edge.first;
-            auto destination = edge.second;
+            auto destinations = edge.second;
 
-            vertexIndexByLabel[label][vertex].push_back(destination);
+            for (auto destination: destinations) {
+                vertexIndexByLabel[label][vertex].push_back(destination);
 
-            // create unique vectors of vertices per label (vector instead of set for random access later)
-            if (std::find(outVertexByLabel[label].begin(), outVertexByLabel[label].end(), vertex) == outVertexByLabel[label].end()) {
-                outVertexByLabel[label].push_back(vertex);
-            }
-            if (std::find(inVertexByLabel[label].begin(), inVertexByLabel[label].end(), destination) == inVertexByLabel[label].end()) {
-                inVertexByLabel[label].push_back(destination);
+                // create unique vectors of vertices per label (vector instead of set for random access later)
+                if (std::find(outVertexByLabel[label].begin(), outVertexByLabel[label].end(), vertex) ==
+                    outVertexByLabel[label].end()) {
+                    outVertexByLabel[label].push_back(vertex);
+                }
+                if (std::find(inVertexByLabel[label].begin(), inVertexByLabel[label].end(), destination) ==
+                    inVertexByLabel[label].end()) {
+                    inVertexByLabel[label].push_back(destination);
+                }
             }
         }
 
         for (auto edge : graph->reverse_adj[vertex]) {
             auto label = edge.first;
-            auto origin = edge.second;
+            auto origins = edge.second;
 
-            vertexIndexByLabelReverse[label][vertex].push_back(origin);
+            for (auto origin:origins) {
+                vertexIndexByLabelReverse[label][vertex].push_back(origin);
+            }
         }
     }
 }
@@ -54,7 +60,7 @@ void unpackQueryTree(std::vector<std::pair<uint32_t, bool>> *path, RPQTree *q) {
         return;
     }
 
-    char* sign;
+    char *sign;
     const auto label = static_cast<uint32_t>(strtoll(q->data.c_str(), &sign, 10));
     path->emplace_back(label, *sign == '+');
 }
@@ -113,7 +119,8 @@ double SimpleEstimator::indexBasedJoinSampling(std::unordered_map<uint32_t, std:
     for (uint32_t i = 0; i < sampleSize; ++i) {
         ID = sampleIds[i];
         // fromVertexIndex is the index such that (*from)[index] maps to the ID-th element in the join
-        fromVertexIndex = 0; for (; ID >= cptPerVertex[fromVertexIndex]; ++fromVertexIndex);
+        fromVertexIndex = 0;
+        for (; ID >= cptPerVertex[fromVertexIndex]; ++fromVertexIndex);
         // offset is such that the offset-th element that maps from fromVertexIndex is the ID-th element in the join
         if (fromVertexIndex > 0)
             offset = ID - cptPerVertex[fromVertexIndex - 1];
